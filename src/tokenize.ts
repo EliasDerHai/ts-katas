@@ -9,13 +9,12 @@ export type Token = {
 export function tokenize(matches: SearchResult): Token[] {
     return matches.numbers.reduce<Token[]>((acc, nextNumber) => {
         const nextOperand = matches.operands.shift();
+
         const nextOperandIndex = nextOperand?.index ?? Number.MAX_SAFE_INTEGER;
         const nextNumberIndex = nextNumber.index ?? Number.MAX_SAFE_INTEGER;
-        const numberDepth = getDepth(matches, nextNumber);
-        const operandDepth = nextOperand ? getDepth(matches, nextOperand) : 0;
 
-        const operandToken = nextOperand ? getOperandToken(nextOperand, operandDepth) : null;
-        const numberToken = getNumberToken(nextNumber, numberDepth);
+        const operandToken = nextOperand ? getOperandToken(matches, nextOperand) : null;
+        const numberToken = getNumberToken(matches, nextNumber);
 
         if (nextNumberIndex === nextOperandIndex) {
             // check if last token was a number or an operand
@@ -35,11 +34,13 @@ function countUntilToken(toCount: RegExpMatchArray[], until: RegExpMatchArray): 
     return toCount.filter(countMatch => (countMatch.index ?? 0) < (until.index ?? 0)).length
 }
 
-function getOperandToken(value: RegExpMatchArray, depth: number): Token {
+function getOperandToken(matches: SearchResult, value: RegExpMatchArray): Token {
+    const depth = getDepth(matches, value)
     return { value: getOperand(value[0]), depth }
 }
 
-function getNumberToken(value: RegExpMatchArray, depth: number): Token {
+function getNumberToken(matches: SearchResult, value: RegExpMatchArray): Token {
+    const depth = getDepth(matches, value)
     return { value: Number(value[0]), depth }
 }
 
