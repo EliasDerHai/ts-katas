@@ -1,10 +1,17 @@
 import { SearchResult } from "./search";
 import { ArithmeticOperand, getOperand } from "./calc";
 
-export type Token = {
-    value: number | ArithmeticOperand;
+type NumberToken = {
+    value: number;
     depth: number;
 }
+
+type OperandToken = {
+    value: ArithmeticOperand;
+    depth: number;
+}
+
+export type Token = NumberToken | OperandToken;
 
 export function tokenize(matches: SearchResult): Token[] {
     return matches.numbers.reduce<Token[]>((acc, nextNumber) => {
@@ -17,9 +24,11 @@ export function tokenize(matches: SearchResult): Token[] {
         const numberToken = getNumberToken(matches, nextNumber);
 
         if (nextNumberIndex === nextOperandIndex) {
-            // check if last token was a number or an operand
-            // put the opposite of what came last first
-            return []
+            const invertedNumberToken = {value: numberToken.value * -1, depth: numberToken.depth}
+            const apply = wasLastANumber(acc)
+            ? operandToken ? [...acc, operandToken, invertedNumberToken] : [...acc, invertedNumberToken]
+            : operandToken ? [...acc, invertedNumberToken, operandToken] : [...acc, invertedNumberToken];
+            return [...acc, ...apply];
 
         } else if (nextNumberIndex < nextOperandIndex) {
             return operandToken ? [...acc, numberToken, operandToken] : [...acc, numberToken];
@@ -30,16 +39,20 @@ export function tokenize(matches: SearchResult): Token[] {
     }, []);
 }
 
+function wasLastANumber(token: Token[]): boolean {
+    return token.length === 0 || typeof token[token.length].value === 'number';
+}
+
 function countUntilToken(toCount: RegExpMatchArray[], until: RegExpMatchArray): number {
     return toCount.filter(countMatch => (countMatch.index ?? 0) < (until.index ?? 0)).length
 }
 
-function getOperandToken(matches: SearchResult, value: RegExpMatchArray): Token {
+function getOperandToken(matches: SearchResult, value: RegExpMatchArray): OperandToken {
     const depth = getDepth(matches, value)
     return { value: getOperand(value[0]), depth }
 }
 
-function getNumberToken(matches: SearchResult, value: RegExpMatchArray): Token {
+function getNumberToken(matches: SearchResult, value: RegExpMatchArray): NumberToken {
     const depth = getDepth(matches, value)
     return { value: Number(value[0]), depth }
 }
