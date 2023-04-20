@@ -12,7 +12,7 @@ export function calc(expression: string): number {
 }
 
 
-export function getOperand(char: string) {
+export function getOperand(char: string, throwOnMissMatch: boolean = true) {
     switch (char) {
         case '+':
             return ArithmeticOperand.plus;
@@ -27,7 +27,11 @@ export function getOperand(char: string) {
             return ArithmeticOperand.dividedBy;
 
         default:
-            throw new Error('Illegal Argument - not an operand ' + char)
+            if (throwOnMissMatch) {
+                throw new Error('Illegal Argument - not an operand ' + char)
+            } else {
+                return ArithmeticOperand.none;
+            }
     }
 }
 

@@ -8,8 +8,6 @@ export type SearchResult = {
 export function search(expression: string): SearchResult {
     const numberRegex = /-?\d+(\.\d+)?/g;
     const operandRegex = /[+*\/-]/g;
-    // const numberRegex = /(?:-?(?<=\s*[+\-*/]\s*)|-?\d+(\.\d+)?)/g;
-    // const operandRegex = /([+*\/]|(?<!(?:[-+*\/]\s*))-)/g;
     const openRegex = /\(/g;
     const closeRegex = /\)/g;
     expression = expression.trim();
