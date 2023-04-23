@@ -1,52 +1,56 @@
 import { ArithmeticOperand } from "./arithmetic-operand";
 import { Token, NumberToken, OperandToken, isNumberToken, isOperandToken } from "./token";
 
+/**
+ * @param token list of token (only number and operand -
+ * the nesting (brackets or times/devided-by) is represented by a depth for each token)
+ * @returns number that the equation resolves to
+ */
 export function evaluate(token: Token[]): number {
 
-    while (token.length > 1) {
-        const maxDepth = Math.max(...token.map(t => t.depth));
-
-
-        while (token.some(t => t.depth === maxDepth)) {
-            let nextDeepest = token.find(t => t.depth === maxDepth);
-            if (!nextDeepest) { throw new Error('not possible'); }
-            const nextDeepestIndex = token.indexOf(nextDeepest);
-            const operandToken = token[nextDeepestIndex + 1];
-            const otherNumber = token[nextDeepestIndex + 2];
-
-            if (operandToken.depth !== maxDepth || otherNumber.depth !== maxDepth) {
-                throw new Error('Expected adjacent tokens to be of same depth');
-            }
-            if (!isNumberToken(nextDeepest)
-                || !isOperandToken(operandToken)
-                || !isNumberToken(otherNumber)
-            ) {
-                throw new Error('Token do not match their expectation (type)')
-            }
-
-            const expressionValue = evaluateSingleExpression(nextDeepest, otherNumber, operandToken);
-            const highestAdjacentDepth = getHighestAdjacentDepth(token, nextDeepestIndex);
-            const singleExpressionReplacementToken: NumberToken =
-                { value: expressionValue, depth: highestAdjacentDepth };
-
-            token.splice(nextDeepestIndex, 3, singleExpressionReplacementToken);
+    // check done condition
+    if (token.length === 1) {
+        const finalToken = token[0];
+        if (!isNumberToken(finalToken)) {
+            throw new Error('Expected final token to be a number token');
         }
+        return finalToken.value;
     }
 
-    // get maxDepth
-    // find first 3 with max depth
-    // evaluate 
-    // set the new weight to the hightest adjacent token
-    // continue with the next 3-piece chain of highest depth until no more heighest depth
-    // repeat until only one token left
+    // get max depth
+    const maxDepth = Math.max(...token.map(t => t.depth));
 
-    const finalToken = token[0];
-    if (!isNumberToken(finalToken)) {
-        throw new Error('Expected final token to be a number token');
+    // get 3 token ( number operator number - eg. 1 + 2)
+    const nextDeepest = token.find(t => t.depth === maxDepth);
+    if (!nextDeepest) { throw new Error('not possible'); }
+    const nextDeepestIndex = token.indexOf(nextDeepest);
+    const operandToken = token[nextDeepestIndex + 1];
+    const otherNumber = token[nextDeepestIndex + 2];
+
+    if (operandToken.depth !== maxDepth || otherNumber.depth !== maxDepth) {
+        throw new Error('Expected adjacent tokens to be of same depth');
     }
 
-    return finalToken.value;
+    if (!isNumberToken(nextDeepest)
+        || !isOperandToken(operandToken)
+        || !isNumberToken(otherNumber)
+    ) {
+        throw new Error('Token do not match their expectation (type)');
+    }
+
+    // evaluate the token & get the highest depth of a token adjacent to the expression (= 3 token)
+    const expressionValue = evaluateSingleExpression(nextDeepest, otherNumber, operandToken);
+    const highestAdjacentDepth = getHighestAdjacentDepth(token, nextDeepestIndex);
+    const singleExpressionReplacementToken: NumberToken =
+        { value: expressionValue, depth: highestAdjacentDepth };
+
+    // replace the expression with the new resolved token
+    const updatedToken = [...token.slice(0, nextDeepestIndex), singleExpressionReplacementToken, ...token.slice(nextDeepestIndex + 3),];
+
+    // repeat recursively
+    return evaluate(updatedToken);
 }
+
 
 
 function evaluateSingleExpression(

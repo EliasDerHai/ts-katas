@@ -28,22 +28,19 @@ export function tokenize(searchResult: SearchResult): Token[] {
 }
 
 function groupByValue<T>(array: T[], property: keyof T): T[][] {
-    const grouped: T[][] = [];
     const sortedArray = array.sort((a, b) => a[property] < b[property] ? -1 : 1);
 
-    for (const item of sortedArray) {
-        const lastGroup = grouped[grouped.length - 1];
+    return sortedArray.reduce<T[][]>((groups, item) => {
+        const lastGroup = groups[groups.length - 1];
 
         if (lastGroup && lastGroup[0][property] === item[property]) {
-            lastGroup.push(item);
+            return [...groups.slice(0, groups.length - 1), [...lastGroup, item],
+            ];
         } else {
-            grouped.push([item]);
+            return [...groups, [item]];
         }
-    }
-
-    return grouped;
+    }, []);
 }
-
 
 function getOverwritingToken(searchResult: SearchResult, matches: RegExpMatchArray[], token: Token[]): Token[] {
     if (isLastTokenANumber(token)) {
@@ -92,22 +89,25 @@ function getDepth(matches: SearchResult, until: RegExpMatchArray): number {
 }
 
 function addOperatorWeight(token: Token[]) {
-    for (let i = 0; i < token.length; i++) {
-        const pre = (i - 1) >= 0 ? token[i - 1] : null;
-        const post = (i + 1) < token.length ? token[i + 1] : null;
-        const curr = token[i];
+    token.filter((current, tokenIndex) => {
+        const previous = (tokenIndex - 1) >= 0
+            ? token[tokenIndex - 1]
+            : null;
+        const next = (tokenIndex + 1) < token.length
+            ? token[tokenIndex + 1]
+            : null;
 
-        if ((hasSameDepth(pre, curr) && isDotOperand(pre))
-            || (hasSameDepth(post, curr) && isDotOperand(post))) {
-            curr.depth += .5;
-        }
-    }
-}
-function hasSameDepth(pre: Token | null, curr: Token): boolean {
-    return pre?.depth === curr.depth;
+        return (hasSameDepth(previous, current) && isDotOperand(previous))
+            || (hasSameDepth(next, current) && isDotOperand(next))
+            || isDotOperand(current)
+    }).forEach(filteredToken => filteredToken.depth += .5);
 }
 
-function isDotOperand(pre: Token | null): boolean {
-    return pre?.value === ArithmeticOperand.times || pre?.value === ArithmeticOperand.dividedBy
+function hasSameDepth(other: Token | null, curr: Token): boolean {
+    return other?.depth === curr.depth;
+}
+
+function isDotOperand(token: Token | null): boolean {
+    return token?.value === ArithmeticOperand.times || token?.value === ArithmeticOperand.dividedBy
 }
 
