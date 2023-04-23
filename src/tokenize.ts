@@ -1,22 +1,12 @@
-import { ArithmeticOperand, getOperand } from "./calc";
+import { ArithmeticOperand, getOperand } from "./arithmetic-operand";
 import { SearchResult } from "./search";
+import { Token, OperandToken, NumberToken } from "./token";
 
-type NumberToken = {
-    value: number;
-    depth: number;
-}
-
-type OperandToken = {
-    value: ArithmeticOperand;
-    depth: number;
-}
-
-export type Token = NumberToken | OperandToken;
 
 export function tokenize(searchResult: SearchResult): Token[] {
     const grouped = groupByValue([...searchResult.numbers, ...searchResult.operands], 'index');
 
-    return grouped.reduce<Token[]>((acc, nextMatchs) => {
+    const token = grouped.reduce<Token[]>((acc, nextMatchs) => {
         if (nextMatchs.length > 2 || nextMatchs.length < 1) {
             throw new Error('Illegal argument ' + nextMatchs.map(x => x[0]).join(','));
         }
@@ -31,6 +21,10 @@ export function tokenize(searchResult: SearchResult): Token[] {
             return [...acc, token];
         }
     }, []);
+
+    addOperatorWeight(token);
+
+    return token;
 }
 
 function groupByValue<T>(array: T[], property: keyof T): T[][] {
@@ -96,3 +90,24 @@ function getNumberToken(matches: SearchResult, regExpMatchArray: RegExpMatchArra
 function getDepth(matches: SearchResult, until: RegExpMatchArray): number {
     return countUntilToken(matches.openBrackets, until) - countUntilToken(matches.closeBrackets, until);
 }
+
+function addOperatorWeight(token: Token[]) {
+    for (let i = 0; i < token.length; i++) {
+        const pre = (i - 1) >= 0 ? token[i - 1] : null;
+        const post = (i + 1) < token.length ? token[i + 1] : null;
+        const curr = token[i];
+
+        if ((hasSameDepth(pre, curr) && isDotOperand(pre))
+            || (hasSameDepth(post, curr) && isDotOperand(post))) {
+            curr.depth += .5;
+        }
+    }
+}
+function hasSameDepth(pre: Token | null, curr: Token): boolean {
+    return pre?.depth === curr.depth;
+}
+
+function isDotOperand(pre: Token | null): boolean {
+    return pre?.value === ArithmeticOperand.times || pre?.value === ArithmeticOperand.dividedBy
+}
+

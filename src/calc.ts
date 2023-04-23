@@ -1,46 +1,26 @@
+import { ArithmeticOperand } from "./arithmetic-operand";
 import { buildTree } from "./build-tree";
 import { search } from "./search";
+import { Token } from "./token";
 import { tokenize } from "./tokenize";
 
 
 export function calc(expression: string): number {
     const matches = search(expression);
     const tokens = tokenize(matches);
-    buildTree(tokens);
+
+    if (tokens.length === 1) {
+        return getNumerOrThrow(tokens[0]);
+    }
+
 
     return -1;
 }
 
-
-export function getOperand(char: string, throwOnMissMatch: boolean = true) {
-    switch (char) {
-        case '+':
-            return ArithmeticOperand.plus;
-
-        case '-':
-            return ArithmeticOperand.minus;
-
-        case '*':
-            return ArithmeticOperand.times;
-
-        case '/':
-            return ArithmeticOperand.dividedBy;
-
-        default:
-            if (throwOnMissMatch) {
-                throw new Error('Illegal Argument - not an operand ' + char)
-            } else {
-                return ArithmeticOperand.none;
-            }
+function getNumerOrThrow(arg0: Token): number {
+    if (typeof arg0.value != 'number') {
+        throw new Error("Function not implemented.");
     }
+
+    return arg0.value;
 }
-
-export enum ArithmeticOperand {
-    none = 'none',
-    plus = '+',
-    minus = '-',
-    times = '*',
-    dividedBy = '/',
-}
-
-

@@ -1,4 +1,4 @@
-import { ArithmeticOperand } from "./calc";
+import { ArithmeticOperand } from "./arithmetic-operand";
 import { search } from "./search";
 import { tokenize } from "./tokenize";
 
@@ -36,9 +36,9 @@ describe("tokenize - without brackets", function () {
         const actual = tokenize(searchResult);
 
         expect(actual).toEqual([
-            { value: -2, depth: 0 },
+            { value: -2, depth: 0.5 },
             { value: ArithmeticOperand.times, depth: 0 },
-            { value: -1, depth: 0 },
+            { value: -1, depth: 0.5 },
         ]);
     });
 
@@ -48,9 +48,9 @@ describe("tokenize - without brackets", function () {
         const actual = tokenize(searchResult);
 
         expect(actual).toEqual([
-            { value: 2, depth: 0 },
+            { value: 2, depth: 0.5 },
             { value: ArithmeticOperand.dividedBy, depth: 0 },
-            { value: -1, depth: 0 },
+            { value: -1, depth: 0.5 },
         ]);
     });
 
@@ -62,9 +62,9 @@ describe("tokenize - without brackets", function () {
         expect(actual).toEqual([
             { value: 22.5, depth: 0 },
             { value: ArithmeticOperand.plus, depth: 0 },
-            { value: -1.3, depth: 0 },
+            { value: -1.3, depth: 0.5 },
             { value: ArithmeticOperand.times, depth: 0 },
-            { value: -444, depth: 0 },
+            { value: -444, depth: 0.5 },
         ]);
     });
 
@@ -76,9 +76,9 @@ describe("tokenize - without brackets", function () {
         expect(actual).toEqual([
             { value: 22.5, depth: 0 },
             { value: ArithmeticOperand.plus, depth: 0 },
-            { value: -1.3, depth: 0 },
+            { value: -1.3, depth: 0.5 },
             { value: ArithmeticOperand.times, depth: 0 },
-            { value: -444, depth: 0 },
+            { value: -444, depth: 0.5 },
         ]);
     });
 
@@ -123,7 +123,7 @@ describe("tokenize - with brackets", function () {
             { value: ArithmeticOperand.plus, depth: 1 },
             { value: -1.3, depth: 1 },
             { value: ArithmeticOperand.times, depth: 0 },
-            { value: -444, depth: 0 },
+            { value: -444, depth: 0.5 },
         ]);
     });
 
