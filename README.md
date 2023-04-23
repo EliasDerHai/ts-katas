@@ -4,7 +4,15 @@ katas in a superior language  (👁️ @java)
 https://www.codewars.com/kata/52a78825cdfc2cfc87000005
 
 
-Instructions
+# note
+the initial tests where pretty simple compared to the ones of the "submit"-tests on codewars:
+these include an arbitrary nesting ((((5))* -2)) or inverted nestings -(8*5)
+which were not expect when designing the algorithm
+
+-> bigger refacs would be necessary to match those new requirements but I think Im not in the mood for that :/
+
+
+# Codewars Instructions
 
 Given a mathematical expression as a string you must return the result as a number.
 Numbers

@@ -28,7 +28,8 @@ export function evaluate(token: Token[]): number {
     const otherNumber = token[nextDeepestIndex + 2];
 
     if (operandToken.depth !== maxDepth || otherNumber.depth !== maxDepth) {
-        throw new Error('Expected adjacent tokens to be of same depth');
+        nextDeepest.depth = Math.max(operandToken.depth, otherNumber.depth);
+        evaluate(token);
     }
 
     if (!isNumberToken(nextDeepest)

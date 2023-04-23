@@ -54,4 +54,16 @@ describe("calc", function () {
         const expected = 7.732;
         expect(actual).toBe(expected);
     });
+
+    it("should evaluate '12* 123/-(-5 + 2)' correctly", () => {
+        const actual = calc('12* 123/-(-5 + 2)');
+        const expected = 492;
+        expect(actual).toBe(expected);
+    });
+
+    it("should evaluate '((80 - (19)))' correctly", () => {
+        const actual = calc('((80 - (19)))');
+        const expected = 61;
+        expect(actual).toBe(expected);
+    });
 });
