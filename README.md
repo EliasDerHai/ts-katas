@@ -6,11 +6,11 @@ https://www.codewars.com/kata/52a78825cdfc2cfc87000005
 
 # note
 the initial tests where pretty simple compared to the ones of the "submit"-tests on codewars:
-these include an arbitrary nesting ((((5))* -2)) or inverted nestings -(8*5)
+these include an arbitrary nesting ((((5))* -2)) or inverted nestings -(8*5) or ((-3 * -(-(-6))))
 which were not expect when designing the algorithm
 
--> bigger refacs would be necessary to match those new requirements but I think Im not in the mood for that :/
-
+the tokenization has a hack to resolve "-(" to "-1" "*" and increasing the depth (this is not clean)
+possibly this could be replaced by a stack to track the currently elevated scope or by replacing certain token in the inputstring upfront ... 
 
 # Codewars Instructions
 

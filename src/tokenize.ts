@@ -18,13 +18,11 @@ export function tokenize(searchResult: SearchResult): Token[] {
         } else {
             const match = nextMatches[0];
 
-            // handling "-(" by adding "-1" "*" with side-effect artificialDepth 
-            // meh but would have to come up with a completely different tokenization otherwise
+            // #region hacky part
+            // handling "-(" by adding "-1" "*" with side-effect artificialDepth (increase depth for all coming token)
+            // unarguably bad but could not come up with something better at that point -.-
             const expectOperand = acc.length % 2 === 1;
-            if (!expectOperand
-                && match[0] === '-'
-                && searchResult.openBrackets.some(m => m.index === (match.index ?? -1) + 1)
-            ) {
+            if (!expectOperand && isMinusOpenBracket(match, searchResult)) {
                 const depth = getDepth(searchResult, match) + 1;
                 artificialDepth++;
                 return [
@@ -33,7 +31,7 @@ export function tokenize(searchResult: SearchResult): Token[] {
                     { value: ArithmeticOperand.times, depth }
                 ];
             }
-            // end of hacky part
+            // #endregion
 
             const token = isOperandMatch(match)
                 ? getOperandToken(searchResult, match)
@@ -142,3 +140,6 @@ function isDotOperand(token: Token | null): boolean {
     return token?.value === ArithmeticOperand.times || token?.value === ArithmeticOperand.dividedBy
 }
 
+function isMinusOpenBracket(match: RegExpMatchArray, searchResult: SearchResult):boolean{
+    return match[0] === '-'&& searchResult.openBrackets.some(m => m.index === (match.index ?? -1) + 1);
+}
