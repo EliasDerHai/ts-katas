@@ -8,7 +8,7 @@ export function tokenize(searchResult: SearchResult): Token[] {
 
     let artificialDepth = 0;
 
-    const token = grouped.reduce<Token[]>((acc, nextMatches, iteration) => {
+    const token = grouped.reduce<Token[]>((acc, nextMatches) => {
         if (nextMatches.length > 2 || nextMatches.length < 1) {
             throw new Error('Illegal argument ' + nextMatches.map(x => x[0]).join(','));
         }
@@ -16,12 +16,10 @@ export function tokenize(searchResult: SearchResult): Token[] {
         if (nextMatches.length === 2) {
             return [...acc, ...getOverwritingToken(searchResult, nextMatches, acc, artificialDepth)];
         } else {
-            const expectOperand = iteration % 2 === 1;
             const match = nextMatches[0];
 
             // handling "-(" by adding "-1" "*" with side effect artificialDepth (ugly)
-            if (!expectOperand
-                && match[0] === '-'
+            if (match[0] === '-'
                 && searchResult.openBrackets.some(m => m.index === (match.index ?? -1) + 1)
             ) {
                 const depth = getDepth(searchResult, match) + 1;

@@ -22,4 +22,4 @@ export const isNumberToken = (token: any): token is NumberToken =>
     (typeof token?.value === 'number');
 
 export const isOperandToken = (token: any): token is OperandToken =>
-    (getOperand(token?.value) !== ArithmeticOperand.none);
+    (getOperand(token?.value, false) !== ArithmeticOperand.none);
