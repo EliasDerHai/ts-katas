@@ -6,7 +6,7 @@ import { Token, OperandToken, NumberToken } from "./token";
 export function tokenize(searchResult: SearchResult): Token[] {
     const grouped = groupByValue([...searchResult.numbers, ...searchResult.operands], 'index');
 
-    let artificialDepth = 0;
+    let artificialDepth = 0; // could actually cause bugs (never reduced)
 
     const token = grouped.reduce<Token[]>((acc, nextMatches) => {
         if (nextMatches.length > 2 || nextMatches.length < 1) {
@@ -18,8 +18,11 @@ export function tokenize(searchResult: SearchResult): Token[] {
         } else {
             const match = nextMatches[0];
 
-            // handling "-(" by adding "-1" "*" with side effect artificialDepth (ugly)
-            if (match[0] === '-'
+            // handling "-(" by adding "-1" "*" with side-effect artificialDepth 
+            // meh but would have to come up with a completely different tokenization otherwise
+            const expectOperand = acc.length % 2 === 1;
+            if (!expectOperand
+                && match[0] === '-'
                 && searchResult.openBrackets.some(m => m.index === (match.index ?? -1) + 1)
             ) {
                 const depth = getDepth(searchResult, match) + 1;
@@ -30,6 +33,7 @@ export function tokenize(searchResult: SearchResult): Token[] {
                     { value: ArithmeticOperand.times, depth }
                 ];
             }
+            // end of hacky part
 
             const token = isOperandMatch(match)
                 ? getOperandToken(searchResult, match)
