@@ -66,4 +66,16 @@ describe("calc", function () {
         const expected = 61;
         expect(actual).toBe(expected);
     });
+    
+    it("should evaluate '(1 - 2) + -(-(-(-4)))' correctly", () => {
+        const actual = calc('(1 - 2) + -(-(-(-4)))');
+        const expected = 3;
+        expect(actual).toBe(expected);
+    });
+    
+    it("should evaluate '(123.45*(678.90 / (-2.5+ 11.5)-(((80 -(19))) *33.25)) / 20) - (123.45*(678.90 / (-2.5+ 11.5)-(((80 -(19))) *33.25)) / 20) + (13 - 2)/ -(-11)' correctly", () => {
+        const actual = calc('(123.45*(678.90 / (-2.5+ 11.5)-(((80 -(19))) *33.25)) / 20) - (123.45*(678.90 / (-2.5+ 11.5)-(((80 -(19))) *33.25)) / 20) + (13 - 2)/ -(-11)');
+        const expected = 1;
+        expect(actual).toBe(expected);
+    });
 });

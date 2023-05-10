@@ -6,9 +6,9 @@ import { Token, OperandToken, NumberToken } from "./token";
 export function tokenize(searchResult: SearchResult): Token[] {
     const grouped = groupByValue([...searchResult.numbers, ...searchResult.operands], 'index');
 
-    let artificialDepth = 0;
+    let artificialDepth = 0; // could actually cause bugs (never reduced)
 
-    const token = grouped.reduce<Token[]>((acc, nextMatches, iteration) => {
+    const token = grouped.reduce<Token[]>((acc, nextMatches) => {
         if (nextMatches.length > 2 || nextMatches.length < 1) {
             throw new Error('Illegal argument ' + nextMatches.map(x => x[0]).join(','));
         }
@@ -16,14 +16,13 @@ export function tokenize(searchResult: SearchResult): Token[] {
         if (nextMatches.length === 2) {
             return [...acc, ...getOverwritingToken(searchResult, nextMatches, acc, artificialDepth)];
         } else {
-            const expectOperand = iteration % 2 === 1;
             const match = nextMatches[0];
 
-            // handling "-(" by adding "-1" "*" with side effect artificialDepth (ugly)
-            if (!expectOperand
-                && match[0] === '-'
-                && searchResult.openBrackets.some(m => m.index === (match.index ?? -1) + 1)
-            ) {
+            // #region hacky part
+            // handling "-(" by adding "-1" "*" with side-effect artificialDepth (increase depth for all coming token)
+            // unarguably bad but could not come up with something better at that point -.-
+            const expectOperand = acc.length % 2 === 1;
+            if (!expectOperand && isMinusOpenBracket(match, searchResult)) {
                 const depth = getDepth(searchResult, match) + 1;
                 artificialDepth++;
                 return [
@@ -32,6 +31,7 @@ export function tokenize(searchResult: SearchResult): Token[] {
                     { value: ArithmeticOperand.times, depth }
                 ];
             }
+            // #endregion
 
             const token = isOperandMatch(match)
                 ? getOperandToken(searchResult, match)
@@ -140,3 +140,6 @@ function isDotOperand(token: Token | null): boolean {
     return token?.value === ArithmeticOperand.times || token?.value === ArithmeticOperand.dividedBy
 }
 
+function isMinusOpenBracket(match: RegExpMatchArray, searchResult: SearchResult):boolean{
+    return match[0] === '-'&& searchResult.openBrackets.some(m => m.index === (match.index ?? -1) + 1);
+}

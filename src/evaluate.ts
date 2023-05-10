@@ -20,16 +20,30 @@ export function evaluate(token: Token[]): number {
     // get max depth
     const maxDepth = Math.max(...token.map(t => t.depth));
 
+    const nextDeepestIndex = token.findIndex(t => t.depth === maxDepth);
+
+    if (nextDeepestIndex === -1) {
+        throw new Error('Illegal state');
+    }
+
+    if (nextDeepestIndex > token.length - 3) {
+        token[nextDeepestIndex].depth -= 0.5;
+        return evaluate(token);
+    }
+
     // get 3 token ( number operator number - eg. 1 + 2)
-    const nextDeepest = token.find(t => t.depth === maxDepth);
-    if (!nextDeepest) { throw new Error('not possible'); }
-    const nextDeepestIndex = token.indexOf(nextDeepest);
+    const nextDeepest = token[nextDeepestIndex];
     const operandToken = token[nextDeepestIndex + 1];
     const otherNumber = token[nextDeepestIndex + 2];
 
-    if (operandToken.depth !== maxDepth || otherNumber.depth !== maxDepth) {
-        nextDeepest.depth = Math.max(operandToken.depth, otherNumber.depth);
-        evaluate(token);
+    if (!nextDeepest || !operandToken || !otherNumber) {
+        throw new Error('Illegal state');
+    }
+
+    if (operandToken.depth !== maxDepth
+        || otherNumber.depth !== maxDepth) {
+        token[nextDeepestIndex].depth -= 0.5;
+        return evaluate(token);
     }
 
     if (!isNumberToken(nextDeepest)
